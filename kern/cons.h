@@ -25,6 +25,19 @@
 
 struct iocons;
 
+typedef struct cons_char {
+	char c;
+	struct cons_char *prev;
+	struct cons_char *next;
+} cons_char;
+//typedef struct c_char cons_char;
+
+typedef struct cons_line {
+	struct cons_char *cons_text;
+	struct cons_line *prev;
+	struct cons_line *next;
+} cons_line;
+//typedef struct c_line cons_line;
 
 extern struct spinlock cons_lock;
 

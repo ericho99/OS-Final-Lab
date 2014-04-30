@@ -36,6 +36,9 @@ int last = 0;
 
 spinlock cons_lock;	// Spinlock to make console output atomic
 
+struct cons_line *lines;
+struct cons_line *curr_line;
+
 /***** General device-independent console code *****/
 // Here we manage the console input buffer,
 // where we stash characters received from the keyboard or serial port
@@ -49,6 +52,16 @@ static struct {
 	uint32_t wpos;
 } cons;
 
+
+void
+print_cons_line(cons_line *line)
+{
+	struct cons_char *curr_char = line->cons_text;
+	while (curr_char != NULL) {
+		cons_putc(curr_char->c);
+		curr_char = curr_char->next;
+	}
+}
 
 // called by device interrupt routines to feed input characters
 // into the circular console input buffer.
@@ -183,7 +196,14 @@ cons_io(void)
 	while((c = cons_getc())){
 		((char*) FILEDATA(FILEINO_CONSIN))[consin->size++] = c;
 		iodone = 1;
+
+		cprintf("\nc = %d (%c)\n", c, c);
+		if (c == 228)
+			cprintf("\n YOU PRESSED LEFT\n");
+		else if (c == 10)
+			cprintf("\n YOU ENTERED U NUBCAKE\n");
 	}
+	cprintf("DONE\n");
 	
 	// Output
 	fileinode * consout = &files->fi[FILEINO_CONSOUT];

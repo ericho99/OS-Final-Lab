@@ -158,6 +158,8 @@ file_io(trapframe *tf)
 		done();
 	}
 
+	cprintf("iodone = %d\n", iodone);
+
 	// We successfully did some I/O, let the root process run again.
 	if (iodone)
 		trap_return(tf);
