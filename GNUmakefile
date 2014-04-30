@@ -157,10 +157,14 @@ else
 # Lab 5 is a distributed system, so we need (at least) two instances.
 # Only one instance gets input from the terminal, to avoid confusion.
 qemu: $(IMAGES)
-	@rm -f node?.dump
-	$(QEMU) $(QEMUOPTS) $(QEMUNET2) </dev/null | sed -e 's/^/2: /g' &
-	@sleep 1
-	$(QEMU) $(QEMUOPTS) $(QEMUNET1)
+	# for actual lab5
+	#@rm -f node?.dump
+	#$(QEMU) $(QEMUOPTS) $(QEMUNET2) </dev/null | sed -e 's/^/2: /g' &
+	#@sleep 1
+	#$(QEMU) $(QEMUOPTS) $(QEMUNET1)
+	
+	# for final project
+	$(QEMU) $(QEMUOPTS)
 endif
 
 # Launch QEMU without a virtual VGA display (use when X is unavailable).
