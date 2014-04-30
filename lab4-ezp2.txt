@@ -1,0 +1,27 @@
+ESTIMATE of time to complete lab: 30 hours
+
+      Start  Time  Lab
+Date  Time   Spent Part Work completed
+----  -----  ----- ---- ---------
+3/28   8:00   4:00  1   Read the specification, fixed some things from lab 3
+3/28   6:00   3:00  1   Successfully pass the root case, 1/11 test cases
+                          woo-hoo, but seems like a long lab
+3/28   9:00   1:00  1   Implemented read/write, but for some reason, I can't
+                          pass the first case anymore, even when I undo all
+                          changes... this is weird, I'll email the TA
+3/28  10:00   1:00  1   I decided to disable the spinlock_release panic for now,
+                          and I managed to pass the second test case after
+                          some debugging, turns out I forgot to set the fi->size
+                          after writing from the buffer
+4/03  12:00   4:00  234 Read through the rest of the lab
+4/03  22:00   2:00  NA  Completed the lab, debugged a few small things that was
+                          causing it to fail some of the time
+             -----
+             14:00  TOTAL time spent
+
+Major difficulties:  This was probably the lab that was the least amount of work
+so far, and there weren't any major difficulties.  It was really annoying with
+the first merge, because there were two proc_init() calls in init() so it was
+causing spinlock errors, but luckily we were able to catch that.  Debugging at
+the end was a bit annoying because we would get 100/100 some of the time, but
+not always--turns out to be a small thing in pmap_pagefault().

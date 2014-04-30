@@ -1,0 +1,15 @@
+ESTIMATE of time to complete lab: 30 hours
+
+      Start  Time  Lab
+Date  Time   Spent Part Work completed
+----  -----  ----- ---- ---------
+4/11  13:00   3:00  NA  Read the specification, did some other related readings
+4/11  17:00   1:00  1   Merged the lab, starting part 1 before dinner
+4/11  20:00   2:00  1   Continued working on part 1
+4/12  10:00   2:00  1   Finished part 1, not too bad
+4/13  14:00   2:00  2   Started working on part 2, did exercise 3, worked on 4
+4/18  19:00   1:00  34  Looked at the rest of the lab... looking for bugs...
+             -----
+             11:00  TOTAL time spent
+
+Major difficulties:

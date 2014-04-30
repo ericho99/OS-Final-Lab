@@ -1,0 +1,12 @@
+ESTIMATE of time to complete lab: 35 hours
+
+      Start  Time  Lab
+Date  Time   Spent Part Work completed
+----  -----  ----- ---- ---------
+4/11  8:00   3:00   1   Reading over lab, fixing make and merging, getting familiar with lab, doing exercise 1
+4/13  1:00   3:00   1   Finished part1, can transfer packets
+4/18  10:00  2:00   2	Starting part2, read, did exercise 3
+4/18  12:00  2:15   2   Exercise 4, migrating nodes
+
+	         10:15 - TOTAL time spent on the lab
+

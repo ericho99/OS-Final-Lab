@@ -1,0 +1,14 @@
+ESTIMATE of time to complete lab: 35 hours
+
+      Start  Time  Lab
+Date  Time   Spent Part Work completed
+----  -----  ----- ---- ---------
+3/28  8:30   2:00   1   Reading over lab, getting familiar, doing part 1
+3/28  10:30  1:30   1   Finished up exercise 2 and working on exercise 3
+3/29  8:00   1:00   1   Working on read/write
+4/2   8:30   4:00   1   Finishing up part1, passing first 4 tests. Finished seek and readdir.
+4/3   7:00   3:30   all Debugging. Fixed a bunch of spinlock stuff.
+
+	     12:00 - TOTAL time spent on the lab
+
+Statement of Difficulties: This lab went relatively smoothly, but there by the time we were passing all the test cases most of the time, there were bugs that plagues our program. These bugs were difficult to find mostly because we didn't know where to look. In the previous lab, we had failed one test case so we examined that first. Overall, debugging was the hardest part of the lab as usual, but I enjoyed it more because there were more test cases to pass which let us know our progress. Bugs that only manifest themselves part of the time are also very interesting and something that I hadn't really dealt with before. Again, some of the bugs were in previous part of labs which was difficult to find.

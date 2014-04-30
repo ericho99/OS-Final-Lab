@@ -1,0 +1,36 @@
+ESTIMATE of time to complete lab: 40 hours
+
+      Start  Time  Lab
+Date  Time   Spent Part Work completed
+----  -----  ----- ---- ---------
+2/27  20:00   4:00  1   Read the specification, did the reading mentioned in
+                          exercise 1.
+2/28   6:00   4:00  1   I think I did exercise 2, not sure if it's correct...
+2/28  12:00   6:00  1   YES!  Finished the first part (or at least I can pass)
+                          the test case now :)
+2/28  20:00   4:00  2+  Started working on part 2, looked more at the later
+                          parts, and they seem easier... I also really hope
+                          that my code for part 1 is right!  I guess this is
+                          what I have for first cut :/
+3/05  20:00   2:00  2   Continued working on part 2, no real progress, but I
+                          think Eric Ho's got this.
+3/06  12:00  10:00  3   Completed part 3 YESSSSSSSSSS!  It passes the test case
+                          for protection if we comment out the test for fork.
+3/07   8:00   8:00  4   Finished part 4, doesn't pass any test cases, though,
+                          so it's either buggy or depends on part 5 to pass the
+                          test cases... I think it's really annoying when you
+                          have to complete a later part to test a previous one.
+3/07   6:00   6:00  5   Wrote the code for 5, can't test since something is
+                          definitely buggy... Already skipped something to work
+                          on this today, but I have to go now, hopefully my team
+                          can finish this!
+             -----
+             44:00  TOTAL time spent
+
+Major difficulties:  
+We had three weeks to do this because it was extremely hard and long.  I still
+don't think it was enough time, considering that many of us in the group had
+midterms and stuff, or had to leave on Friday, which was when this lab was due.
+I spent a while coding, but a lot of time was also spent debugging.  It's hard
+to tell if the program doesn't work because of bugs from the current part, a
+previous part, or something from previous labs.

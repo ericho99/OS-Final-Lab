@@ -1,0 +1,13 @@
+ESTIMATE of time to complete lab: 45 hours
+
+      Start  Time  Lab
+Date  Time   Spent Part Work completed
+----  -----  ----- ---- ---------
+3/6   n/a    33:30 1-4	My timelog was erased, but I don't want to make stuff up so I'll give a brief description. I spent around 18 hours debugging and working on part1, and finally finished it. I spent another 10 hours on ELF. I sketched out part3 (passing the case) in around 2 hours, and worked on part 4 for the rest of the time.
+3/7   1:00   3:00  5	Working on part5, not really getting that far
+
+		36:30 - TOTAL time spent on lab3
+
+I guess there were no major difficulties, this lab was just hard. Part 1 took seemingly forever, and I needed direction before I could actually start writing code. After writing a ton of code, it was still really buggy, and two one-character mistakes took me around 5 hours (could have been more) to debug. ELFs took me a ton of time too: I think I did it fundamentally the wrong way the first time through, and then had to change the way I looked at it. It was deceptively difficult. Part 3 was easy, and part4 and 5 are coming soon.
+
+
