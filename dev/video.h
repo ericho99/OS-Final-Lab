@@ -34,5 +34,9 @@
 void video_init(void);
 void video_putc(int c);
 
+int video_move_cursor(int n, int del);
+
+void blk_left(void);
+void blk_right(void);
 
 #endif /* PIOS_KERN_VIDEO_H_ */

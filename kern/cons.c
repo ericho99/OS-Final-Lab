@@ -36,8 +36,22 @@ int last = 0;
 
 spinlock cons_lock;	// Spinlock to make console output atomic
 
-struct cons_line *lines;
-struct cons_line *curr_line;
+//struct cons_line *lines;
+//struct cons_line *curr_line;
+
+struct cons_hist *hist;
+struct cons_hist *curr;
+int line_start = 0;
+int line_starts[256];
+int line_no = 0;
+int curr_line = 0;
+int line_wpos;
+int line_chars = 0;
+
+#define LINE_MAX 1024
+char line_buff[LINE_MAX];
+int char_pos = 0;
+int line_len = 0;
 
 /***** General device-independent console code *****/
 // Here we manage the console input buffer,
@@ -63,6 +77,13 @@ print_cons_line(cons_line *line)
 	}
 }
 
+void
+cons_writec(char c) {
+	cons.buf[cons.wpos++] = c;
+	if (cons.wpos == CONSBUFSIZE)
+		cons.wpos = 0;
+}
+
 // called by device interrupt routines to feed input characters
 // into the circular console input buffer.
 void
@@ -71,12 +92,132 @@ cons_intr(int (*proc)(void))
 	int c;
 
 	spinlock_acquire(&cons_lock);
-	while ((c = (*proc)()) != -1) {
+	fileinode * consin = &files->fi[FILEINO_CONSIN];
+	while ((c = (*proc)()) != -1) {//cprintf("\nc = %d (%c)\n", c, c);
+		//if (c == 228)
+		//	cprintf("\n YOU PRESSED LEFT\n");
+		//else if (c == 10)
+		//	cprintf("\n YOU ENTERED U NUBCAKE\n");
+
+		//if (c == 8) {
+		//	//cprintf("\npressed BACKSPACE\n");
+		//	((char*) FILEDATA(FILEINO_CONSIN))[--consin->size] = '\0';
+		//	//iodone = 1;
+		//	//last--;
+		//	//consin->size--;
+		//	video_move_cursor(-1);
+		//	break;
+		//}
+
+		if (c == 10 || c == '\n') {    // pressed enter
+			//hist->start_pos = line_start;
+			//hist->end_pos = consin->size;
+
+			////cprintf("\nPOS = %d, TEXT = |%s|\n", hist->start_pos, ((char*) FILEDATA(FILEINO_CONSIN) + hist->start_pos));
+
+			//struct cons_hist *next_hist;
+			//next_hist->prev = hist;
+			//hist->next = next_hist;
+
+			////cprintf("\nhist->start_pos = %d\n", hist->next->prev->start_pos);
+
+			//hist = next_hist;
+			//curr = hist;
+
+			////cprintf("\nhist->start_pos = %d\n", hist->prev->start_pos);
+
+			line_starts[line_no++] = line_start;
+			curr_line = line_no;
+
+			line_start = consin->size + 1;
+			line_starts[line_no] = line_start;
+
+			line_wpos = cons.wpos + 1;
+			line_chars = 0;
+			//cprintf("\nsize = %d\n", strlen(cons.buf));
+			//cprintf("\nBUF = |%s|\n", cons.buf);
+
+			// write from temp buff to console buffer
+			int i;
+			//cprintf("leinlen = %d\n", line_len);
+			for (i = 0; i < line_len; i++) {
+				cons.buf[cons.wpos++] = line_buff[i];
+				//panic("SHIT");
+			}
+			cons.buf[cons.wpos++] = '\n';    // send newline to terminate line
+
+			// reset temporary buffer
+			line_len = 0;
+			char_pos = 0;
+
+			// break not necessary once code finished
+			break;
+		} else if (c == 226) {    // pressed up
+			curr_line--;
+			//cprintf("CONSIN = |%s|\n", ((char*) FILEDATA(FILEINO_CONSIN)) + line_starts[curr_line]);
+
+			int sz = line_starts[curr_line + 1] - line_starts[curr_line] - 1;
+			//cprintf("sz = %d\n", sz);
+
+			int index = line_starts[curr_line];
+			int len = sz;
+			int i;
+			//cons.wpos = line_wpos;
+			//cons.wpos -= line_chars;
+			//cons.wpos = 0;
+			for (i = 0; i < len; i++) {
+				cons.buf[cons.wpos++] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
+				if (cons.wpos == CONSBUFSIZE)
+					cons.wpos = 0;
+			}
+			//memmove((void *)line_start, ((char *)FILEDATA(FILEINO_CONSIN)) + line_starts[curr_line], sz);
+			//consin->size = consin->size - line_start + sz;
+
+			//curr = curr->prev;
+			//cprintf("\nPOS = %d, TEXT = |%s|\n", curr->start_pos, ((char*) FILEDATA(FILEINO_CONSIN) + curr->start_pos));
+
+			break;
+		} else if (c == 227) {
+			//cprintf("\n");
+			//cprintf("line = %d\n", cons.wpos);
+			//cprintf("wpos = %d\n", cons.wpos);
+			//((char*) FILEDATA(FILEINO_CONSIN))[--consin->size] = '\0';
+			//cons.buf[--cons.wpos] = '\0';
+			//((char*) FILEDATA(FILEINO_CONSIN))[consin->size++] = 'Y';
+			//cons.buf[cons.wpos++] = 'X';
+			//cprintf("len1 = %d, len2 = %d\n", strlen(((char*) FILEDATA(FILEINO_CONSIN))), strlen(cons.buf));
+			video_move_cursor(-3, true);
+			break;
+		}
+
+		if (c == 228) {    // left
+			video_move_cursor(-1, false);
+
+			//blk_left();
+			break;
+		} else if (c == 229) {    // right
+			video_move_cursor(1, false);
+			//blk_right();
+			break;
+		}
+
 		if (c == 0)
 			continue;
 		cons.buf[cons.wpos++] = c;
 		if (cons.wpos == CONSBUFSIZE)
 			cons.wpos = 0;
+
+		// update the temporary buffer, shifting everything to the right of the
+		// current position one position, to simulate insertion
+		line_len++;
+		int i;
+		for (i = line_len; i > char_pos; i--) {
+			line_buff[i] = line_buff[i - 1];
+		}
+		line_buff[char_pos++] = c;
+
+		line_chars++;
+
 	}
 	spinlock_release(&cons_lock);
 
@@ -145,6 +286,9 @@ cons_init(void)
 	kbd_init();
 	serial_init();
 
+	// initiate the console history!
+	// ???
+
 	if (!serial_exists)
 		warn("Serial port does not exist!\n");
 }
@@ -195,15 +339,10 @@ cons_io(void)
 	fileinode * consin = &files->fi[FILEINO_CONSIN];
 	while((c = cons_getc())){
 		((char*) FILEDATA(FILEINO_CONSIN))[consin->size++] = c;
+		//cprintf("CONSIN = |%s|\n", ((char*) FILEDATA(FILEINO_CONSIN)));
 		iodone = 1;
-
-		cprintf("\nc = %d (%c)\n", c, c);
-		if (c == 228)
-			cprintf("\n YOU PRESSED LEFT\n");
-		else if (c == 10)
-			cprintf("\n YOU ENTERED U NUBCAKE\n");
 	}
-	cprintf("DONE\n");
+	//cprintf("DONE\n");
 	
 	// Output
 	fileinode * consout = &files->fi[FILEINO_CONSOUT];

@@ -39,6 +39,13 @@ typedef struct cons_line {
 } cons_line;
 //typedef struct c_line cons_line;
 
+typedef struct cons_hist {
+	int start_pos;
+	int end_pos;
+	struct cons_hist *prev;
+	struct cons_hist *next;
+} cons_hist;
+
 extern struct spinlock cons_lock;
 
 void cons_init(void);
