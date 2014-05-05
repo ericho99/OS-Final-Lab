@@ -150,28 +150,29 @@ cons_intr(int (*proc)(void))
 		//else if (c == 10)
 		//	cprintf("\n YOU ENTERED U NUBCAKE\n");
 
-		//if (c == 8) {    // backspace
-		//	// delete current char and shift everything to the left
-		//	line_len--;
-		//	int i;
-		//	for (i = char_pos - 1; i < line_len; i++) {
-		//		line_buff[i] = line_buff[i + 1];
-		//	}
-		//	line_buff[line_len] = '\0';
-		//	char_pos++;
-		//	//video_putc('\b');
-		//	//cprintf("\n|%s|\n", line_buff);
+		if (c == 8) {    // backspace
+			// delete current char and shift everything to the left
+			line_len--;
+			int i;
+			for (i = char_pos - 1; i < line_len; i++) {
+				line_buff[i] = line_buff[i + 1];
+			}
+			line_buff[line_len] = '\0';
+			char_pos--;
+			video_putc('\b');
+			//cprintf("\n|%s|\n", line_buff);
+			break;
 
 
-		//	//cprintf("\npressed BACKSPACE\n");
-		//	//((char*) FILEDATA(FILEINO_CONSIN))[--consin->size] = '\0';
-		//	//iodone = 1;
-		//	//last--;
-		//	//consin->size--;
-		//	//video_move_cursor(-1);
+			//cprintf("\npressed BACKSPACE\n");
+			//((char*) FILEDATA(FILEINO_CONSIN))[--consin->size] = '\0';
+			//iodone = 1;
+			//last--;
+			//consin->size--;
+			//video_move_cursor(-1);
 
-		//	//break;
-		//}
+			//break;
+		}
 
 		if (c == 10 || c == '\n') {    // pressed enter
 			//hist->start_pos = line_start;
