@@ -44,7 +44,7 @@ video_init(void)
 	crt_buf = (uint16_t*) cp;
 	crt_pos = pos;
 	blk_pos = pos;
-	line_pos = pos;
+	// line_pos = pos;
 }
 void
 video_putc(int c)
@@ -136,6 +136,14 @@ void blk_right(){
 		outb(addr_6845, 15);
 		outb(addr_6845 + 1, blk_pos);
 	}
+}
+
+void clear_line(){
+	while(crt_pos > line_pos){
+		crt_buf[crt_pos] = ('\b' & ~0xff) | ' ';
+		crt_pos--;
+	}
+	blk_pos = crt_pos;
 }
 
 void

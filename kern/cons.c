@@ -126,6 +126,8 @@ cons_intr(int (*proc)(void))
 
 			////cprintf("\nhist->start_pos = %d\n", hist->prev->start_pos);
 
+			clear_line();
+
 			line_starts[line_no++] = line_start;
 			curr_line = line_no;
 
@@ -136,6 +138,7 @@ cons_intr(int (*proc)(void))
 			line_chars = 0;
 			//cprintf("\nsize = %d\n", strlen(cons.buf));
 			//cprintf("\nBUF = |%s|\n", cons.buf);
+
 
 			// write from temp buff to console buffer
 			int i;
@@ -203,9 +206,9 @@ cons_intr(int (*proc)(void))
 
 		if (c == 0)
 			continue;
-		cons.buf[cons.wpos++] = c;
-		if (cons.wpos == CONSBUFSIZE)
-			cons.wpos = 0;
+		// cons.buf[cons.wpos++] = c;
+		// if (cons.wpos == CONSBUFSIZE)
+		// 	cons.wpos = 0;
 
 		// update the temporary buffer, shifting everything to the right of the
 		// current position one position, to simulate insertion
@@ -215,8 +218,9 @@ cons_intr(int (*proc)(void))
 			line_buff[i] = line_buff[i - 1];
 		}
 		line_buff[char_pos++] = c;
+		cons_putc(c);
 
-		line_chars++;
+		// line_chars++;
 
 	}
 	spinlock_release(&cons_lock);
