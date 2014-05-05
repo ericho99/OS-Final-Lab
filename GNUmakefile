@@ -180,11 +180,15 @@ qemu-gdb: $(IMAGES) .gdbinit
 else
 # Launch QEMU for debugging the 2-node distributed system in Lab 5.
 qemu-gdb: $(IMAGES) .gdbinit
+	#@echo "*** Now run 'gdb'." 1>&2
+	#@rm -f node?.dump
+	#$(QEMU) $(QEMUOPTS) $(QEMUNET2) </dev/null | sed -e 's/^/2: /g' &
+	#@sleep 1
+	#$(QEMU) $(QEMUOPTS) $(QEMUNET1) -S $(QEMUPORT)
+
+	# final project stuff
 	@echo "*** Now run 'gdb'." 1>&2
-	@rm -f node?.dump
-	$(QEMU) $(QEMUOPTS) $(QEMUNET2) </dev/null | sed -e 's/^/2: /g' &
-	@sleep 1
-	$(QEMU) $(QEMUOPTS) $(QEMUNET1) -S $(QEMUPORT)
+	$(QEMU) $(QEMUOPTS) -S $(QEMUPORT)
 endif
 
 # Launch QEMU for debugging, without a virtual VGA display.
