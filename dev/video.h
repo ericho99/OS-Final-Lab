@@ -34,6 +34,7 @@
 void video_init(void);
 void video_putc(int c);
 
+int delete_chars(int n);
 int video_move_cursor(int n, int del);
 
 void blk_left(void);

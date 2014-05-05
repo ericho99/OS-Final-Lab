@@ -140,10 +140,21 @@ void blk_right(){
 
 void clear_line(){
 	while(crt_pos > line_pos){
-		crt_buf[crt_pos] = ('\b' & ~0xff) | ' ';
-		crt_pos--;
+		crt_buf[--crt_pos] = ('\b' & ~0xff) | ' ';
+		//crt_pos--;
 	}
 	blk_pos = crt_pos;
+}
+
+int
+delete_chars(int n) {
+	int i;
+	for (i = 0; i < n; i++) {
+		crt_buf[--crt_pos] = ('\b' & ~0xff) | ' ';
+	}
+	blk_pos = crt_pos;
+
+	return n;
 }
 
 void

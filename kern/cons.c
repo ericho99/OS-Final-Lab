@@ -84,6 +84,16 @@ cons_writec(char c) {
 		cons.wpos = 0;
 }
 
+int
+actual_len(char *arr, int len) {
+	int i;
+	int bs = 0;
+	for (i = 0; i < len; i++) {
+		bs += (arr[i] == '\b');
+	}
+	return (len - 2 * bs);
+}
+
 // called by device interrupt routines to feed input characters
 // into the circular console input buffer.
 void
@@ -126,7 +136,9 @@ cons_intr(int (*proc)(void))
 
 			////cprintf("\nhist->start_pos = %d\n", hist->prev->start_pos);
 
-			clear_line();
+			//clear_line();
+			int act_len = actual_len(line_buff, line_len);
+			delete_chars(act_len);
 
 			line_starts[line_no++] = line_start;
 			curr_line = line_no;
