@@ -283,7 +283,56 @@ cons_intr(int (*proc)(void))
 			//((char*) FILEDATA(FILEINO_CONSIN))[consin->size++] = 'Y';
 			//cons.buf[cons.wpos++] = 'X';
 			//cprintf("len1 = %d, len2 = %d\n", strlen(((char*) FILEDATA(FILEINO_CONSIN))), strlen(cons.buf));
-			video_move_cursor(-3, true);
+			//video_move_cursor(-3, true);
+
+			//int j;
+			//for (j = 0; j <= line_no; j++) {
+			//	cprintf("line %d start = %d\n", j, line_starts[j]);
+			//}
+
+			if (curr_line >= line_no)
+				break;
+
+			curr_line++;
+
+			cons_clear_line();
+
+			if (curr_line == line_no) {
+				int i;
+				for (i = 0; i < last_len; i++) {
+					line_buff[i] = last_buff[i];
+				}
+				line_len = last_len;
+			} else {
+				int sz = line_starts[curr_line + 1] - line_starts[curr_line] - 1;
+				//cprintf("sz = %d\n", sz);
+
+				int index = line_starts[curr_line];
+				int len = sz;
+				int i;
+
+				line_len = sz;
+				//cons.wpos = line_wpos;
+				//cons.wpos -= line_chars;
+				//cons.wpos = 0;
+				//cprintf("linelen = %d\n", line_len);
+				for (i = 0; i < line_len; i++) {
+					//cons.buf[cons.wpos++] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
+					//if (cons.wpos == CONSBUFSIZE)
+					//	cons.wpos = 0;
+					line_buff[i] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
+				}
+
+				//cprintf("\nLINEBUFF = |%s|\n", line_buff);
+			}
+
+			int i;
+			for (i = 0; i < line_len; i++) {
+				cons_putc(line_buff[i]);
+			}
+
+			char_pos = line_len;
+
 			break;
 		}
 
