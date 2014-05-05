@@ -150,14 +150,27 @@ cons_intr(int (*proc)(void))
 		//else if (c == 10)
 		//	cprintf("\n YOU ENTERED U NUBCAKE\n");
 
-		//if (c == 8) {
+		//if (c == 8) {    // backspace
+		//	// delete current char and shift everything to the left
+		//	line_len--;
+		//	int i;
+		//	for (i = char_pos - 1; i < line_len; i++) {
+		//		line_buff[i] = line_buff[i + 1];
+		//	}
+		//	line_buff[line_len] = '\0';
+		//	char_pos++;
+		//	//video_putc('\b');
+		//	//cprintf("\n|%s|\n", line_buff);
+
+
 		//	//cprintf("\npressed BACKSPACE\n");
-		//	((char*) FILEDATA(FILEINO_CONSIN))[--consin->size] = '\0';
+		//	//((char*) FILEDATA(FILEINO_CONSIN))[--consin->size] = '\0';
 		//	//iodone = 1;
 		//	//last--;
 		//	//consin->size--;
-		//	video_move_cursor(-1);
-		//	break;
+		//	//video_move_cursor(-1);
+
+		//	//break;
 		//}
 
 		if (c == 10 || c == '\n') {    // pressed enter
@@ -276,15 +289,15 @@ cons_intr(int (*proc)(void))
 
 		if (c == 228) {    // left
 			// video_move_cursor(-1, false);
-			// char_pos--;
 			blk_left();
-			pos_shift(-1);
+			char_pos--;
+			//pos_shift(-1);
 			break;
 		} else if (c == 229) {    // right
 			// video_move_cursor(1, false);
-			// char_pos++;
 			blk_right();
-			pos_shift(1);
+			char_pos++;
+			//pos_shift(1);
 			break;
 		}
 
