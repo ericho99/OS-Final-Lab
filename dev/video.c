@@ -44,7 +44,7 @@ video_init(void)
 	crt_buf = (uint16_t*) cp;
 	crt_pos = pos;
 	blk_pos = pos;
-	// line_pos = pos;
+	line_pos = 1442;
 }
 void
 video_putc(int c)
@@ -65,12 +65,13 @@ video_putc(int c)
 	case '\n':
 		crt_pos += CRT_COLS;
 		blk_pos = crt_pos;
-		line_pos = crt_pos;
+		line_pos = crt_pos + 2;
 		/* fallthru */
 	case '\r':
-		blk_right();
+		// blk_right();
 		crt_pos -= (crt_pos % CRT_COLS);
 		blk_pos = crt_pos;
+		line_pos = crt_pos + 2;
 		break;
 	case '\t':
 		video_putc(' ');
@@ -205,7 +206,6 @@ video_move_cursor(int n, int del) {
 		//}
 		//blk_pos = new_pos;
 	} else {
-		//cprintf("HERE?\n");
 		blk_pos = new_pos;
 	}
 

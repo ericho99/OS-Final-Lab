@@ -206,14 +206,16 @@ cons_intr(int (*proc)(void))
 		}
 
 		if (c == 228) {    // left
-			video_move_cursor(-1, false);
+			// video_move_cursor(-1, false);
+			// char_pos--;
+			blk_left();
 			char_pos--;
-			//blk_left();
 			break;
 		} else if (c == 229) {    // right
-			video_move_cursor(1, false);
+			// video_move_cursor(1, false);
+			// char_pos++;
+			blk_right();
 			char_pos++;
-			//blk_right();
 			break;
 		}
 
