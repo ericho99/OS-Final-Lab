@@ -203,9 +203,10 @@ cons_intr(int (*proc)(void))
 
 		if (c == 0)
 			continue;
-		cons.buf[cons.wpos++] = c;
-		if (cons.wpos == CONSBUFSIZE)
-			cons.wpos = 0;
+		
+		//cons.buf[cons.wpos++] = c;
+		//if (cons.wpos == CONSBUFSIZE)
+		//	cons.wpos = 0;
 
 		// update the temporary buffer, shifting everything to the right of the
 		// current position one position, to simulate insertion
