@@ -50,8 +50,10 @@ int line_chars = 0;
 
 #define LINE_MAX 1024
 char line_buff[LINE_MAX];
+char last_buff[LINE_MAX];
 int char_pos = 0;
 int line_len = 0;
+int last_len = 0;
 
 /***** General device-independent console code *****/
 // Here we manage the console input buffer,
@@ -92,6 +94,12 @@ actual_len(char *arr, int len) {
 		bs += (arr[i] == '\b');
 	}
 	return (len - 2 * bs);
+}
+
+void
+cons_clear_line(void) {
+	int act_len = actual_len(line_buff, line_len);
+	delete_chars(act_len);
 }
 
 // called by device interrupt routines to feed input characters
@@ -137,13 +145,12 @@ cons_intr(int (*proc)(void))
 			////cprintf("\nhist->start_pos = %d\n", hist->prev->start_pos);
 
 			//clear_line();
-			int act_len = actual_len(line_buff, line_len);
-			delete_chars(act_len);
+			cons_clear_line();
 
 			line_starts[line_no++] = line_start;
 			curr_line = line_no;
 
-			line_start = consin->size + 1;
+			line_start += line_len + 1;
 			line_starts[line_no] = line_start;
 
 			line_wpos = cons.wpos + 1;
@@ -168,7 +175,28 @@ cons_intr(int (*proc)(void))
 			// break not necessary once code finished
 			break;
 		} else if (c == 226) {    // pressed up
+			if (curr_line <= 0)
+				break;
+
+			if (curr_line == line_no) {
+				//cprintf("\nCOPYING\n");
+				//memmove(last_buff, line_buff, line_len);
+				int i;
+				for (i = 0; i < line_len; i++) {
+					last_buff[i] = line_buff[i];
+				}
+				last_len = line_len;
+			}
+
+			//int j;
+			//for (j = 0; j <= line_no; j++) {
+			//	cprintf("line %d start = %d\n", j, line_starts[j]);
+			//}
+
 			curr_line--;
+
+			cons_clear_line();
+
 			//cprintf("CONSIN = |%s|\n", ((char*) FILEDATA(FILEINO_CONSIN)) + line_starts[curr_line]);
 
 			int sz = line_starts[curr_line + 1] - line_starts[curr_line] - 1;
@@ -177,13 +205,18 @@ cons_intr(int (*proc)(void))
 			int index = line_starts[curr_line];
 			int len = sz;
 			int i;
+
+			line_len = sz;
 			//cons.wpos = line_wpos;
 			//cons.wpos -= line_chars;
 			//cons.wpos = 0;
-			for (i = 0; i < len; i++) {
-				cons.buf[cons.wpos++] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
-				if (cons.wpos == CONSBUFSIZE)
-					cons.wpos = 0;
+			//cprintf("linelen = %d\n", line_len);
+			for (i = 0; i < line_len; i++) {
+				//cons.buf[cons.wpos++] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
+				//if (cons.wpos == CONSBUFSIZE)
+				//	cons.wpos = 0;
+				line_buff[i] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
+				cons_putc(line_buff[i]);
 			}
 			//memmove((void *)line_start, ((char *)FILEDATA(FILEINO_CONSIN)) + line_starts[curr_line], sz);
 			//consin->size = consin->size - line_start + sz;
@@ -224,6 +257,8 @@ cons_intr(int (*proc)(void))
 		//if (cons.wpos == CONSBUFSIZE)
 		//	cons.wpos = 0;
 
+		cons_putc(c);
+
 		// update the temporary buffer, shifting everything to the right of the
 		// current position one position, to simulate insertion
 		line_len++;
@@ -232,9 +267,8 @@ cons_intr(int (*proc)(void))
 			line_buff[i] = line_buff[i - 1];
 		}
 		line_buff[char_pos++] = c;
-		cons_putc(c);
 
-		// line_chars++;
+		line_chars++;
 
 	}
 	spinlock_release(&cons_lock);
