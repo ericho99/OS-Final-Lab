@@ -102,6 +102,39 @@ cons_clear_line(void) {
 	delete_chars(act_len);
 }
 
+void
+pos_shift(int n) {
+	if (n < 0) {
+		while (n < 0) {
+			if (line_buff[--char_pos] == '\b') {
+				n--;
+			} else {
+				n++;
+			}
+		}
+	} else {
+		int i;
+		int last_good;
+		int last_complete;
+		int cnt = 0;
+		for (i = char_pos; i < line_len; i++) {
+			if (line_buff[i] == '\b')
+				cnt--;
+			else
+				cnt++;
+
+			if (cnt == n && !last_good) {
+				last_complete = i;
+				last_good = true;
+			} else if (cnt <= 0) {
+				last_good = false;
+			}
+		}
+
+		char_pos = last_good ? last_complete + 1 : line_len;
+	}
+}
+
 // called by device interrupt routines to feed input characters
 // into the circular console input buffer.
 void
@@ -218,6 +251,9 @@ cons_intr(int (*proc)(void))
 				line_buff[i] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
 				cons_putc(line_buff[i]);
 			}
+
+			char_pos = line_len;
+
 			//memmove((void *)line_start, ((char *)FILEDATA(FILEINO_CONSIN)) + line_starts[curr_line], sz);
 			//consin->size = consin->size - line_start + sz;
 
@@ -242,13 +278,13 @@ cons_intr(int (*proc)(void))
 			// video_move_cursor(-1, false);
 			// char_pos--;
 			blk_left();
-			char_pos--;
+			pos_shift(-1);
 			break;
 		} else if (c == 229) {    // right
 			// video_move_cursor(1, false);
 			// char_pos++;
 			blk_right();
-			char_pos++;
+			pos_shift(1);
 			break;
 		}
 
