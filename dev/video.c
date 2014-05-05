@@ -55,12 +55,14 @@ video_putc(int c)
 		c |= 0x0700;
 	switch (c & 0xff) {
 	case '\b':
-		if (crt_pos > 0) {
+		if (blk_pos > line_pos){
+			crt_buf[blk_pos-1] = (c & ~0xff) | ' ';
+			for (i=blk_pos-1;i<crt_pos;++i){
+				crt_buf[i] = crt_buf[i+1];
+			}
+			blk_pos--;
 			crt_pos--;
-			crt_buf[crt_pos] = (c & ~0xff) | ' ';
-			blk_pos = crt_pos;
 		}
-		// have to fix backspaces here too, not a big problem
 		break;
 	case '\n':
 		crt_pos += CRT_COLS;
