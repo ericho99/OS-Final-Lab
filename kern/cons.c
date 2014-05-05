@@ -152,6 +152,9 @@ cons_intr(int (*proc)(void))
 
 		if (c == 8) {    // backspace
 			// delete current char and shift everything to the left
+			if (char_pos <= 0)
+				break;
+
 			line_len--;
 			int i;
 			for (i = char_pos - 1; i < line_len; i++) {
