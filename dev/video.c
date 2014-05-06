@@ -153,8 +153,17 @@ void set_blk(uint16_t pos) {
 
 void
 to_begin(){
+	// int i;
 	blk_pos = line_pos;
 	set_blk(blk_pos);
+	// if (blk_pos > line_pos){
+	// 	crt_buf[blk_pos-1] = ('\b' & ~0xff) | ' ';
+	// 	for (i=blk_pos-1;i<crt_pos;++i){
+	// 		crt_buf[i] = crt_buf[i+1];
+	// 	}
+	// 	blk_pos--;
+	// 	crt_pos--;
+	// }
 }
 
 int
