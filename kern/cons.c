@@ -54,6 +54,8 @@ char last_buff[LINE_MAX];
 int char_pos = 0;
 int line_len = 0;
 int last_len = 0;
+int color_mask; //Applied to change text color
+			//(see en.wikipedia.org/wiki/VGA-compatible_text_mode)
 
 /***** General device-independent console code *****/
 // Here we manage the console input buffer,
@@ -135,6 +137,21 @@ pos_shift(int n) {
 	}
 }
 
+int
+buf_strstr(char *col, int len){
+	int i;
+	for (i=0;i<len;i++){
+		if (i>line_len){
+			return 0;
+		}
+		else if (line_buff[i] != col[i]){
+			return 0;
+		}
+	}
+	// if (line_buff[i] != col[i])
+	return 1;
+}
+
 // called by device interrupt routines to feed input characters
 // into the circular console input buffer.
 void
@@ -211,10 +228,36 @@ cons_intr(int (*proc)(void))
 
 			// write from temp buff to console buffer
 			int i;
+			if (buf_strstr("blue",4)){
+				color_mask = 0x0900;
+			}
+			else if (buf_strstr("white",5)){
+				color_mask = 0x0700;
+			}
+			else if (buf_strstr("green",5)){
+				color_mask = 0x0200;
+			}
+			else if (buf_strstr("cyan",4)){
+				color_mask = 0x0300;
+			}
+			else if (buf_strstr("red",3)){
+				color_mask = 0x0400;
+			}
+			else if (buf_strstr("magenta",7)){
+				color_mask = 0x0500;
+			}
+			else if (buf_strstr("orange",6)){
+				color_mask = 0x0600;
+			}
+			else if (buf_strstr("grey",4) || buf_strstr("gray",4)){
+				color_mask = 0x0800;
+			}
+			else{
 			//cprintf("leinlen = %d\n", line_len);
-			for (i = 0; i < line_len; i++) {
-				cons.buf[cons.wpos++] = line_buff[i];
-				//panic("SHIT");
+				for (i = 0; i < line_len; i++) {
+					cons.buf[cons.wpos++] = line_buff[i];
+					//panic("SHIT");
+				}
 			}
 			cons.buf[cons.wpos++] = '\n';    // send newline to terminate line
 
@@ -287,56 +330,7 @@ cons_intr(int (*proc)(void))
 			//((char*) FILEDATA(FILEINO_CONSIN))[consin->size++] = 'Y';
 			//cons.buf[cons.wpos++] = 'X';
 			//cprintf("len1 = %d, len2 = %d\n", strlen(((char*) FILEDATA(FILEINO_CONSIN))), strlen(cons.buf));
-			//video_move_cursor(-3, true);
-
-			//int j;
-			//for (j = 0; j <= line_no; j++) {
-			//	cprintf("line %d start = %d\n", j, line_starts[j]);
-			//}
-
-			if (curr_line >= line_no)
-				break;
-
-			curr_line++;
-
-			cons_clear_line();
-
-			if (curr_line == line_no) {
-				int i;
-				for (i = 0; i < last_len; i++) {
-					line_buff[i] = last_buff[i];
-				}
-				line_len = last_len;
-			} else {
-				int sz = line_starts[curr_line + 1] - line_starts[curr_line] - 1;
-				//cprintf("sz = %d\n", sz);
-
-				int index = line_starts[curr_line];
-				int len = sz;
-				int i;
-
-				line_len = sz;
-				//cons.wpos = line_wpos;
-				//cons.wpos -= line_chars;
-				//cons.wpos = 0;
-				//cprintf("linelen = %d\n", line_len);
-				for (i = 0; i < line_len; i++) {
-					//cons.buf[cons.wpos++] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
-					//if (cons.wpos == CONSBUFSIZE)
-					//	cons.wpos = 0;
-					line_buff[i] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
-				}
-
-				//cprintf("\nLINEBUFF = |%s|\n", line_buff);
-			}
-
-			int i;
-			for (i = 0; i < line_len; i++) {
-				cons_putc(line_buff[i]);
-			}
-
-			char_pos = line_len;
-
+			video_move_cursor(-3, true);
 			break;
 		}
 
@@ -405,8 +399,6 @@ cons_getc(void)
 
 
 static int esc_flag = 0; //Flag which designates whether the last char was ESC
-static int color_mask = 0x0700; //Applied to change text color
-			//(see en.wikipedia.org/wiki/VGA-compatible_text_mode)
 
 // output a character to the console
 // ESC character (ascii 27) is ignored; char after it is set as color mask
@@ -441,6 +433,8 @@ cons_init(void)
 	video_init();
 	kbd_init();
 	serial_init();
+
+	color_mask = 0x0700;
 
 	// initiate the console history!
 	// ???
