@@ -152,6 +152,20 @@ buf_strstr(char *col, int len){
 	return 1;
 }
 
+int
+blank_line(int n) {
+	int sz = line_starts[n + 1] - line_starts[n] - 1;
+	int index = line_starts[n];
+	int i;
+	for (i = 0; i < sz; i++) {
+		int c = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
+		if (c != ' ' && c != '\t' && c != '\n' && c != '\0') {
+			return false;
+		}
+	}
+	return true;
+}
+
 // called by device interrupt routines to feed input characters
 // into the circular console input buffer.
 void
@@ -206,8 +220,13 @@ cons_intr(int (*proc)(void))
 			}
 
 			// clear the line and write from temp buff to console buffer only if
-			// the color was not changed, otherwise leave the "blank" input
-			if (!color_input) {
+			// the color was not changed, otherwise send the "blank" input
+			if (color_input) {
+				int curr_wpos = cons.wpos;
+				for (i = 0; i < line_len; i++) {
+					cons.buf[cons.wpos++] = ' ';
+				}
+			} else {
 				cons_clear_line();
 				for (i = 0; i < line_len; i++) {
 					cons.buf[cons.wpos++] = line_buff[i];
@@ -221,19 +240,27 @@ cons_intr(int (*proc)(void))
 
 			break;
 		} else if (c == 226) {    // pressed up
-			if (curr_line <= 0)
-				break;
-
-			// save the latest line
-			if (curr_line == line_no) {
-				int i;
-				for (i = 0; i < line_len; i++) {
-					last_buff[i] = line_buff[i];
+			int start_reached = false;
+			do {
+				if (curr_line <= 0) {
+					start_reached = true;
+					break;
 				}
-				last_len = line_len;
-			}
 
-			curr_line--;
+				// save the latest line
+				if (curr_line == line_no) {
+					int i;
+					for (i = 0; i < line_len; i++) {
+						last_buff[i] = line_buff[i];
+					}
+					last_len = line_len;
+				}
+
+				curr_line--;
+			} while (blank_line(curr_line));
+
+			if (start_reached)
+				break;
 
 			cons_clear_line();
 
@@ -252,6 +279,12 @@ cons_intr(int (*proc)(void))
 		} else if (c == 227) {    // pressed down
 			if (curr_line >= line_no)
 				break;
+
+			int peek_line = curr_line + 1;
+			while (peek_line < line_no && blank_line(peek_line)) {
+				curr_line++;
+				peek_line = curr_line + 1;
+			}
 
 			curr_line++;
 
