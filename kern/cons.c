@@ -384,6 +384,11 @@ cons_intr(int (*proc)(void))
 			break;
 		}
 
+		else if (c == 1){ //crtl-a
+			to_begin();
+			char_pos = line_start;
+		}
+
 		if (c == 0)
 			continue;
 		

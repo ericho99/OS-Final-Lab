@@ -108,20 +108,20 @@ video_putc(int c)
 		line_pos = crt_pos + 2;
 	}
 	/* move that little blinky thing */
-	set_cursor_pos(blk_pos);
+	set_blk(blk_pos);
 }
 
 void blk_left(){
 	if (blk_pos > line_pos){
 		blk_pos--;
-		set_cursor_pos(blk_pos);
+		set_blk(blk_pos);
 	}
 }
 
 void blk_right(){
 	if (blk_pos < crt_pos){
 		blk_pos++;
-		set_cursor_pos(blk_pos);
+		set_blk(blk_pos);
 	}
 }
 
@@ -144,12 +144,17 @@ delete_chars(int n) {
 	return n;
 }
 
-void
-set_cursor_pos(uint16_t pos) {
+void set_blk(uint16_t pos) {
 	outb(addr_6845, 14);
 	outb(addr_6845 + 1, pos >> 8);
 	outb(addr_6845, 15);
 	outb(addr_6845 + 1, pos);
+}
+
+void
+to_begin(){
+	blk_pos = line_pos;
+	set_blk(blk_pos);
 }
 
 int
@@ -173,7 +178,7 @@ video_move_cursor(int n, int del) {
 		blk_pos = new_pos;
 	}
 
-	set_cursor_pos(blk_pos);
+	set_blk(blk_pos);
 
 	return 1;
 }
