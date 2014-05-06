@@ -176,6 +176,10 @@ cons_intr(int (*proc)(void))
 	spinlock_acquire(&cons_lock);
 	fileinode * consin = &files->fi[FILEINO_CONSIN];
 	while ((c = (*proc)()) != -1) {
+
+		// debugging line to see character code
+		//if (c > 0) cprintf("\nc (%d) = %c\n", c, c);
+
 		if (c == 0) {    // null character, keep looking
 			continue;
 		} else if (c == '\b') {    // pressed backspace
@@ -323,7 +327,7 @@ cons_intr(int (*proc)(void))
 			blk_right();
 			char_pos++;
 			break;
-		} else if (c == 1) {    // pressed crtl+A
+		} else if (c == 1 || c == 224) {    // pressed crtl+A or home
 			to_begin();
 			char_pos = line_start;
 			break;
