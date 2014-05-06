@@ -184,7 +184,9 @@ blank_line(int n) {
 	return true;
 }
 
-// deletes the character in teh bufrer, shifts accordingly, and changes char_pos
+// deletes the character in the buffer, shifts everything to the right of the
+// position left one slot, and terminates the line with a null character
+// NOTE: you should update char_pos and the video after calling this method
 void
 delete_char_at(int n) {
 	line_len--;
@@ -195,10 +197,6 @@ delete_char_at(int n) {
 		line_buff[i] = line_buff[i + 1];
 	}
 	line_buff[line_len] = '\0';
-	char_pos--;
-
-	// hackishly get the video to update by sending the backspace char
-	video_putc('\b');
 }
 
 // called by device interrupt routines to feed input characters
@@ -222,6 +220,10 @@ cons_intr(int (*proc)(void))
 				break;
 
 			delete_char_at(char_pos - 1);
+			char_pos--;
+
+			// hackishly get the video to update by sending the backspace char
+			video_putc('\b');
 
 			break;
 		} else if (c == 233 || c == 8) {    // pressed delete or ctrl+H
@@ -231,23 +233,40 @@ cons_intr(int (*proc)(void))
 			blk_right();
 			delete_char_at(char_pos);
 
+			// hackishly get the video to update by sending the backspace char
+			video_putc('\b');
+
 			break;
 		} else if (false) {    // deletes the word before cursor (NO KEY CODE!)
 			while (char_pos > 0 && whitespace_char(line_buff[char_pos - 1])) {
 				delete_char_at(char_pos - 1);
+				char_pos--;
+
+				// hackishly get the video to update by sending the backspace char
+				video_putc('\b');
 			}
 			while (char_pos > 0 && !whitespace_char(line_buff[char_pos - 1])) {
 				delete_char_at(char_pos - 1);
+				char_pos--;
+
+				// hackishly get the video to update by sending the backspace char
+				video_putc('\b');
 			}
 			break;
 		} else if (false) {    // deletes the word after cursor (NO KEY CODE!)
 			while (char_pos < line_len && whitespace_char(line_buff[char_pos])) {
 				blk_right();
 				delete_char_at(char_pos);
+
+				// hackishly get the video to update by sending the backspace char
+				video_putc('\b');
 			}
 			while (char_pos < line_len && !whitespace_char(line_buff[char_pos])) {
 				blk_right();
 				delete_char_at(char_pos);
+
+				// hackishly get the video to update by sending the backspace char
+				video_putc('\b');
 			}
 			break;
 		} else if (c == '\n') {    // pressed enter
@@ -319,7 +338,7 @@ cons_intr(int (*proc)(void))
 				i++;
 			}
 			break;
-		} else if (c == 226 || c == 16) {    // pressed up or ctrn+P
+		} else if (c == 226 || c == 16) {    // pressed up or ctrl+P
 			int start_reached = false;
 			do {
 				if (curr_line <= 0) {
