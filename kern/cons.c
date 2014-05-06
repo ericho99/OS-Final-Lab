@@ -54,8 +54,12 @@ char last_buff[LINE_MAX];
 int char_pos = 0;
 int line_len = 0;
 int last_len = 0;
-int color_mask; //Applied to change text color
-			//(see en.wikipedia.org/wiki/VGA-compatible_text_mode)
+
+#define NUM_COLORS 9
+char *cols[NUM_COLORS];    // array for colors & respective masks, initialize
+int masks[NUM_COLORS];     // these values in cons_init()
+int color_mask;    //Applied to change text color
+			       //(see en.wikipedia.org/wiki/VGA-compatible_text_mode)
 
 /***** General device-independent console code *****/
 // Here we manage the console input buffer,
@@ -212,7 +216,7 @@ cons_intr(int (*proc)(void))
 			////cprintf("\nhist->start_pos = %d\n", hist->prev->start_pos);
 
 			//clear_line();
-			cons_clear_line();
+			//cons_clear_line();
 
 			line_starts[line_no++] = line_start;
 			curr_line = line_no;
@@ -227,39 +231,71 @@ cons_intr(int (*proc)(void))
 
 
 			// write from temp buff to console buffer
+			int color_input = false;
+			int which_mask;
 			int i;
-			if (buf_strstr("blue",4)){
-				color_mask = 0x0900;
+			for (i = 0; i < NUM_COLORS; i++) {
+				if (buf_strstr(cols[i], strlen(cols[i]))) {
+					color_input = true;
+					//which_mask = masks[i];
+					color_mask = masks[i];
+					break;
+				}
 			}
-			else if (buf_strstr("white",5)){
-				color_mask = 0x0700;
-			}
-			else if (buf_strstr("green",5)){
-				color_mask = 0x0200;
-			}
-			else if (buf_strstr("cyan",4)){
-				color_mask = 0x0300;
-			}
-			else if (buf_strstr("red",3)){
-				color_mask = 0x0400;
-			}
-			else if (buf_strstr("magenta",7)){
-				color_mask = 0x0500;
-			}
-			else if (buf_strstr("orange",6)){
-				color_mask = 0x0600;
-			}
-			else if (buf_strstr("grey",4) || buf_strstr("gray",4)){
-				color_mask = 0x0800;
-			}
-			else{
-			//cprintf("leinlen = %d\n", line_len);
+
+			if (!color_input) {
+				cons_clear_line();
 				for (i = 0; i < line_len; i++) {
 					cons.buf[cons.wpos++] = line_buff[i];
-					//panic("SHIT");
 				}
 			}
 			cons.buf[cons.wpos++] = '\n';    // send newline to terminate line
+
+			//if (color_input) {
+			//	for (i = 0; i < line_len; i++) {
+			//		cons_putc(line_buff[i]);
+			//	}
+			//	color_mask = which_mask;
+			//} else {
+			//	for (i = 0; i < line_len; i++) {
+			//		cons.buf[cons.wpos++] = line_buff[i];
+			//	}
+			//}
+			//cons.buf[cons.wpos++] = '\n';    // send newline to terminate line
+
+			//int i;
+			//if (buf_strstr("blue",4)){
+			//	color_mask = 0x0900;
+			//}
+			//else if (buf_strstr("white",5)){
+			//	color_mask = 0x0700;
+			//}
+			//else if (buf_strstr("green",5)){
+			//	color_mask = 0x0200;
+			//}
+			//else if (buf_strstr("cyan",4)){
+			//	color_mask = 0x0300;
+			//}
+			//else if (buf_strstr("red",3)){
+			//	color_mask = 0x0400;
+			//}
+			//else if (buf_strstr("magenta",7)){
+			//	color_mask = 0x0500;
+			//}
+			//else if (buf_strstr("orange",6)){
+			//	color_mask = 0x0600;
+			//}
+			//else if (buf_strstr("grey",4) || buf_strstr("gray",4)){
+			//	color_mask = 0x0800;
+			//}
+			//else{
+			////cprintf("leinlen = %d\n", line_len);
+			//	for (i = 0; i < line_len; i++) {
+			//		cons.buf[cons.wpos++] = line_buff[i];
+			//		//panic("SHIT");
+			//	}
+			//}
+			//cons.buf[cons.wpos++] = '\n';    // send newline to terminate line
 
 			// reset temporary buffer
 			line_len = 0;
@@ -436,8 +472,25 @@ cons_init(void)
 
 	color_mask = 0x0700;
 
-	// initiate the console history!
-	// ???
+	// initialize the color & mask arrays
+	cols[0] = "blue";
+	masks[0] = 0x0900;
+	cols[1] = "white";
+	masks[1] = 0x0700;
+	cols[2] = "green";
+	masks[2] = 0x0200;
+	cols[3] = "cyan";
+	masks[3] = 0x0300;
+	cols[4] = "red";
+	masks[4] = 0x0400;
+	cols[5] = "magenta";
+	masks[5] = 0x0500;
+	cols[6] = "orange";
+	masks[6] = 0x0600;
+	cols[7] = "gray";
+	masks[7] = 0x0800;
+	cols[8] = "grey";
+	masks[8] = 0x0800;
 
 	if (!serial_exists)
 		warn("Serial port does not exist!\n");
