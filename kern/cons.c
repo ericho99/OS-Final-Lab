@@ -57,6 +57,8 @@ int masks[NUM_COLORS];     // these values in cons_init()
 int color_mask;    //Applied to change text color
 			       //(see en.wikipedia.org/wiki/VGA-compatible_text_mode)
 
+int kill_char = 0;
+
 /***** General device-independent console code *****/
 // Here we manage the console input buffer,
 // where we stash characters received from the keyboard or serial port
@@ -162,6 +164,15 @@ cons_intr(int (*proc)(void))
 	spinlock_acquire(&cons_lock);
 	fileinode * consin = &files->fi[FILEINO_CONSIN];
 	while ((c = (*proc)()) != -1) {
+		// cprintf("%d\n",c);
+		if (kill_char){
+			cons_putc('\b');
+			kill_char = 0;
+			continue;			
+		}
+		else if (c == 0){
+			continue;
+		}
 
 		if (c == '\b') {    // pressed backspace
 			if (char_pos <= 0)
@@ -298,10 +309,8 @@ cons_intr(int (*proc)(void))
 		else if (c == 1){ //crtl-a
 			to_begin();
 			char_pos = line_start;
+			kill_char = 1;
 		}
-
-		if (c == 0)
-			continue;
 		
 		cons_putc(c);
 
