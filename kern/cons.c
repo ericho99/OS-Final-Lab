@@ -279,14 +279,15 @@ cons_intr(int (*proc)(void))
 			line_start += line_len + 1;
 			line_starts[line_no] = line_start;
 
+			// check for "fake" input, which is not stored in history
 			int fake_input = false;
 			int fake_len;
 
+			// check for the "pipe"
 			if (buf_strstr("ls | wc", 7)) {
 				fake_input = true;
 				fake_len = 7;
 				cprintf("\n    12      12      66");
-				video_putc('\n');
 			}
 
 			// check for color change using cos & masks arrays
@@ -301,8 +302,9 @@ cons_intr(int (*proc)(void))
 				}
 			}
 
-			// clear the line and write from temp buff to console buffer only if
-			// the color was not changed, otherwise send the "blank" input
+			// if it's "fake" input, then write blank line to console input as
+			// placeholder in console history; otherwise, clear the line and 
+			// write the temporary buffer to console input buffer
 			if (fake_input) {
 				int curr_wpos = cons.wpos;
 				for (i = 0; i < fake_len; i++) {
