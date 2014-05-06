@@ -176,6 +176,7 @@ cons_intr(int (*proc)(void))
 	spinlock_acquire(&cons_lock);
 	fileinode * consin = &files->fi[FILEINO_CONSIN];
 	while ((c = (*proc)()) != -1) {
+		// cprintf("%d\n",c);
 		if (c == 0) {    // null character, keep looking
 			continue;
 		} else if (c == '\b') {    // pressed backspace
@@ -326,6 +327,10 @@ cons_intr(int (*proc)(void))
 		} else if (c == 1) {    // pressed crtl+A
 			to_begin();
 			char_pos = line_start;
+			break;
+		} else if (c == 5 || c == 225){		// pressed crtl+E
+			to_end();
+			char_pos = line_len;
 			break;
 		}
 		

@@ -41,6 +41,7 @@ void blk_left(void);
 void blk_right(void);
 void clear_line(void);
 void to_begin(void);
+void to_end(void);
 void set_blk(uint16_t pos);
 
 #endif /* PIOS_KERN_VIDEO_H_ */
