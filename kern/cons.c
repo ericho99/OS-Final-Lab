@@ -153,17 +153,39 @@ buf_strstr(char *col, int len){
 }
 
 int
+whitespace_char(int c) {
+	return (c == ' ' || c == '\t' || c == '\n' || c == '\0');
+}
+
+int
 blank_line(int n) {
 	int sz = line_starts[n + 1] - line_starts[n] - 1;
 	int index = line_starts[n];
 	int i;
 	for (i = 0; i < sz; i++) {
 		int c = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
-		if (c != ' ' && c != '\t' && c != '\n' && c != '\0') {
+		if (!whitespace_char(c)) {
 			return false;
 		}
 	}
 	return true;
+}
+
+// deletes the character in teh bufrer, shifts accordingly, and changes char_pos
+void
+delete_char_at(int n) {
+	line_len--;
+
+	// delete current char and shift everything to the left
+	int i;
+	for (i = n; i < line_len; i++) {
+		line_buff[i] = line_buff[i + 1];
+	}
+	line_buff[line_len] = '\0';
+	char_pos--;
+
+	// hackishly get the video to update by sending the backspace char
+	video_putc('\b');
 }
 
 // called by device interrupt routines to feed input characters
@@ -182,23 +204,38 @@ cons_intr(int (*proc)(void))
 
 		if (c == 0) {    // null character, keep looking
 			continue;
-		} else if (c == '\b') {    // pressed backspace
+		} else if (c == '\b' || c == 4) {    // pressed backspace or ctrl+D
 			if (char_pos <= 0)
 				break;
 
-			line_len--;
+			delete_char_at(char_pos - 1);
 
-			// delete current char and shift everything to the left
-			int i;
-			for (i = char_pos - 1; i < line_len; i++) {
-				line_buff[i] = line_buff[i + 1];
+			break;
+		} else if (c == 233 || c == 8) {    // pressed delete or ctrl+H
+			if (char_pos >= line_len)
+				break;
+
+			blk_right();
+			delete_char_at(char_pos);
+
+			break;
+		} else if (false) {    // deletes the word before cursor (NO KEY CODE!)
+			while (char_pos > 0 && whitespace_char(line_buff[char_pos - 1])) {
+				delete_char_at(char_pos - 1);
 			}
-			line_buff[line_len] = '\0';
-			char_pos--;
-
-			// hackishly get the video to update by sending the backspace char
-			video_putc('\b');
-
+			while (char_pos > 0 && !whitespace_char(line_buff[char_pos - 1])) {
+				delete_char_at(char_pos - 1);
+			}
+			break;
+		} else if (false) {    // deletes the word after cursor (NO KEY CODE!)
+			while (char_pos < line_len && whitespace_char(line_buff[char_pos])) {
+				blk_right();
+				delete_char_at(char_pos);
+			}
+			while (char_pos < line_len && !whitespace_char(line_buff[char_pos])) {
+				blk_right();
+				delete_char_at(char_pos);
+			}
 			break;
 		} else if (c == '\n') {    // pressed enter
 
@@ -242,7 +279,7 @@ cons_intr(int (*proc)(void))
 			char_pos = 0;
 
 			break;
-		} else if (c == 226) {    // pressed up
+		} else if (c == 226 || c == 16) {    // pressed up or ctrn+P
 			int start_reached = false;
 			do {
 				if (curr_line <= 0) {
@@ -279,7 +316,7 @@ cons_intr(int (*proc)(void))
 			char_pos = line_len;
 
 			break;
-		} else if (c == 227) {    // pressed down
+		} else if (c == 227 || c == 14) {    // pressed down or ctrl+N
 			if (curr_line >= line_no)
 				break;
 
@@ -331,9 +368,12 @@ cons_intr(int (*proc)(void))
 			to_begin();
 			char_pos = line_start;
 			break;
-		} else if (c == 5 || c == 225){    // pressed crtl+E or end
+		} else if (c == 5 || c == 225) {    // pressed crtl+E or end
 			to_end();
 			char_pos = line_len;
+			break;
+		} else if (c == '\t') {    // pressed tab
+
 			break;
 		}
 		
