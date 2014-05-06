@@ -260,29 +260,33 @@ cons_intr(int (*proc)(void))
 			line_start += line_len + 1;
 			line_starts[line_no] = line_start;
 
-			if (buf_strstr("ls | wc",7)){
+			int fake_input = false;
+			int fake_len;
+
+			if (buf_strstr("ls | wc", 7)) {
+				fake_input = true;
+				fake_len = 7;
 				cprintf("\n    12      12      66");
 				video_putc('\n');
-				break;
 			}
 
 			// check for color change using cos & masks arrays
-			int color_input = false;
 			int which_mask;
 			int i;
 			for (i = 0; i < NUM_COLORS; i++) {
 				if (buf_strstr(cols[i], strlen(cols[i]))) {
-					color_input = true;
+					fake_input = true;
 					color_mask = masks[i];
+					fake_len = line_len;
 					break;
 				}
 			}
 
 			// clear the line and write from temp buff to console buffer only if
 			// the color was not changed, otherwise send the "blank" input
-			if (color_input) {
+			if (fake_input) {
 				int curr_wpos = cons.wpos;
-				for (i = 0; i < line_len; i++) {
+				for (i = 0; i < fake_len; i++) {
 					cons.buf[cons.wpos++] = ' ';
 				}
 			} else {
