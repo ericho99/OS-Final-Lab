@@ -294,11 +294,12 @@ cons_intr(int (*proc)(void))
 			break;
 		} else if (c == '\t') {
 			int i = FILEINO_GENERAL;
-			int j;
 			while (files->fi[i].de.d_name[0]) {
-				if (buf_strstr2(files->fi[i].de.d_name,strlen(files->fi[i].de.d_name))){
-					for (j=line_len;j<strlen(files->fi[i].de.d_name);j++){
-						line_buff[j] = files->fi[i].de.d_name[j];
+				char *filename = files->fi[i].de.d_name;
+				if (buf_strstr2(filename, strlen(filename))) {
+					int j;
+					for (j = line_len; j < strlen(filename); j++) {
+						line_buff[j] = filename[j];
 						line_len++;
 						char_pos++;
 						cons_putc(line_buff[j]);
@@ -400,9 +401,6 @@ cons_intr(int (*proc)(void))
 		} else if (c == 5 || c == 225) {    // pressed crtl+E or end
 			to_end();
 			char_pos = line_len;
-			break;
-		} else if (c == '\t') {    // pressed tab
-
 			break;
 		}
 		
