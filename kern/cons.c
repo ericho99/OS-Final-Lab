@@ -36,18 +36,13 @@ int last = 0;
 
 spinlock cons_lock;	// Spinlock to make console output atomic
 
-//struct cons_line *lines;
-//struct cons_line *curr_line;
-
-struct cons_hist *hist;
-struct cons_hist *curr;
+// keep track of where lines start in the input buffer
 int line_start = 0;
 int line_starts[256];
 int line_no = 0;
 int curr_line = 0;
-int line_wpos;
-int line_chars = 0;
 
+// the temporary buffer for the latest line
 #define LINE_MAX 1024
 char line_buff[LINE_MAX];
 char last_buff[LINE_MAX];
@@ -55,6 +50,7 @@ int char_pos = 0;
 int line_len = 0;
 int last_len = 0;
 
+// information for changing colors
 #define NUM_COLORS 9
 char *cols[NUM_COLORS];    // array for colors & respective masks, initialize
 int masks[NUM_COLORS];     // these values in cons_init()
@@ -165,84 +161,52 @@ cons_intr(int (*proc)(void))
 
 	spinlock_acquire(&cons_lock);
 	fileinode * consin = &files->fi[FILEINO_CONSIN];
-	while ((c = (*proc)()) != -1) {//cprintf("\nc = %d (%c)\n", c, c);
-		//if (c == 228)
-		//	cprintf("\n YOU PRESSED LEFT\n");
-		//else if (c == 10)
-		//	cprintf("\n YOU ENTERED U NUBCAKE\n");
+	while ((c = (*proc)()) != -1) {
 
-		if (c == 8) {    // backspace
-			// delete current char and shift everything to the left
+		if (c == '\b') {    // pressed backspace
 			if (char_pos <= 0)
 				break;
 
 			line_len--;
+
+			// delete current char and shift everything to the left
 			int i;
 			for (i = char_pos - 1; i < line_len; i++) {
 				line_buff[i] = line_buff[i + 1];
 			}
 			line_buff[line_len] = '\0';
 			char_pos--;
+
+			// hackishly get the video to update by sending the backspace char
 			video_putc('\b');
-			//cprintf("\n|%s|\n", line_buff);
+
 			break;
-
-
-			//cprintf("\npressed BACKSPACE\n");
-			//((char*) FILEDATA(FILEINO_CONSIN))[--consin->size] = '\0';
-			//iodone = 1;
-			//last--;
-			//consin->size--;
-			//video_move_cursor(-1);
-
-			//break;
 		}
 
-		if (c == 10 || c == '\n') {    // pressed enter
-			//hist->start_pos = line_start;
-			//hist->end_pos = consin->size;
+		if (c == '\n') {    // pressed enter
 
-			////cprintf("\nPOS = %d, TEXT = |%s|\n", hist->start_pos, ((char*) FILEDATA(FILEINO_CONSIN) + hist->start_pos));
-
-			//struct cons_hist *next_hist;
-			//next_hist->prev = hist;
-			//hist->next = next_hist;
-
-			////cprintf("\nhist->start_pos = %d\n", hist->next->prev->start_pos);
-
-			//hist = next_hist;
-			//curr = hist;
-
-			////cprintf("\nhist->start_pos = %d\n", hist->prev->start_pos);
-
-			//clear_line();
-			//cons_clear_line();
-
+			// update previous line start
 			line_starts[line_no++] = line_start;
 			curr_line = line_no;
 
+			// update current line start
 			line_start += line_len + 1;
 			line_starts[line_no] = line_start;
 
-			line_wpos = cons.wpos + 1;
-			line_chars = 0;
-			//cprintf("\nsize = %d\n", strlen(cons.buf));
-			//cprintf("\nBUF = |%s|\n", cons.buf);
-
-
-			// write from temp buff to console buffer
+			// check for color change using cos & masks arrays
 			int color_input = false;
 			int which_mask;
 			int i;
 			for (i = 0; i < NUM_COLORS; i++) {
 				if (buf_strstr(cols[i], strlen(cols[i]))) {
 					color_input = true;
-					//which_mask = masks[i];
 					color_mask = masks[i];
 					break;
 				}
 			}
 
+			// clear the line and write from temp buff to console buffer only if
+			// the color was not changed, otherwise leave the "blank" input
 			if (!color_input) {
 				cons_clear_line();
 				for (i = 0; i < line_len; i++) {
@@ -251,65 +215,17 @@ cons_intr(int (*proc)(void))
 			}
 			cons.buf[cons.wpos++] = '\n';    // send newline to terminate line
 
-			//if (color_input) {
-			//	for (i = 0; i < line_len; i++) {
-			//		cons_putc(line_buff[i]);
-			//	}
-			//	color_mask = which_mask;
-			//} else {
-			//	for (i = 0; i < line_len; i++) {
-			//		cons.buf[cons.wpos++] = line_buff[i];
-			//	}
-			//}
-			//cons.buf[cons.wpos++] = '\n';    // send newline to terminate line
-
-			//int i;
-			//if (buf_strstr("blue",4)){
-			//	color_mask = 0x0900;
-			//}
-			//else if (buf_strstr("white",5)){
-			//	color_mask = 0x0700;
-			//}
-			//else if (buf_strstr("green",5)){
-			//	color_mask = 0x0200;
-			//}
-			//else if (buf_strstr("cyan",4)){
-			//	color_mask = 0x0300;
-			//}
-			//else if (buf_strstr("red",3)){
-			//	color_mask = 0x0400;
-			//}
-			//else if (buf_strstr("magenta",7)){
-			//	color_mask = 0x0500;
-			//}
-			//else if (buf_strstr("orange",6)){
-			//	color_mask = 0x0600;
-			//}
-			//else if (buf_strstr("grey",4) || buf_strstr("gray",4)){
-			//	color_mask = 0x0800;
-			//}
-			//else{
-			////cprintf("leinlen = %d\n", line_len);
-			//	for (i = 0; i < line_len; i++) {
-			//		cons.buf[cons.wpos++] = line_buff[i];
-			//		//panic("SHIT");
-			//	}
-			//}
-			//cons.buf[cons.wpos++] = '\n';    // send newline to terminate line
-
 			// reset temporary buffer
 			line_len = 0;
 			char_pos = 0;
 
-			// break not necessary once code finished
 			break;
 		} else if (c == 226) {    // pressed up
 			if (curr_line <= 0)
 				break;
 
+			// save the latest line
 			if (curr_line == line_no) {
-				//cprintf("\nCOPYING\n");
-				//memmove(last_buff, line_buff, line_len);
 				int i;
 				for (i = 0; i < line_len; i++) {
 					last_buff[i] = line_buff[i];
@@ -317,80 +233,71 @@ cons_intr(int (*proc)(void))
 				last_len = line_len;
 			}
 
-			//int j;
-			//for (j = 0; j <= line_no; j++) {
-			//	cprintf("line %d start = %d\n", j, line_starts[j]);
-			//}
-
 			curr_line--;
 
 			cons_clear_line();
 
-			//cprintf("CONSIN = |%s|\n", ((char*) FILEDATA(FILEINO_CONSIN)) + line_starts[curr_line]);
-
-			int sz = line_starts[curr_line + 1] - line_starts[curr_line] - 1;
-			//cprintf("sz = %d\n", sz);
-
+			// load from history to temp buffer & write temp buffer
+			line_len = line_starts[curr_line + 1] - line_starts[curr_line] - 1;
 			int index = line_starts[curr_line];
-			int len = sz;
 			int i;
-
-			line_len = sz;
-			//cons.wpos = line_wpos;
-			//cons.wpos -= line_chars;
-			//cons.wpos = 0;
-			//cprintf("linelen = %d\n", line_len);
 			for (i = 0; i < line_len; i++) {
-				//cons.buf[cons.wpos++] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
-				//if (cons.wpos == CONSBUFSIZE)
-				//	cons.wpos = 0;
 				line_buff[i] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
 				cons_putc(line_buff[i]);
 			}
 
 			char_pos = line_len;
 
-			//memmove((void *)line_start, ((char *)FILEDATA(FILEINO_CONSIN)) + line_starts[curr_line], sz);
-			//consin->size = consin->size - line_start + sz;
-
-			//curr = curr->prev;
-			//cprintf("\nPOS = %d, TEXT = |%s|\n", curr->start_pos, ((char*) FILEDATA(FILEINO_CONSIN) + curr->start_pos));
-
 			break;
 		} else if (c == 227) {
-			//cprintf("\n");
-			//cprintf("line = %d\n", cons.wpos);
-			//cprintf("wpos = %d\n", cons.wpos);
-			//((char*) FILEDATA(FILEINO_CONSIN))[--consin->size] = '\0';
-			//cons.buf[--cons.wpos] = '\0';
-			//((char*) FILEDATA(FILEINO_CONSIN))[consin->size++] = 'Y';
-			//cons.buf[cons.wpos++] = 'X';
-			//cprintf("len1 = %d, len2 = %d\n", strlen(((char*) FILEDATA(FILEINO_CONSIN))), strlen(cons.buf));
-			video_move_cursor(-3, true);
+			if (curr_line >= line_no)
+				break;
+
+			curr_line++;
+
+			cons_clear_line();
+
+			if (curr_line == line_no) {
+				// load the saved latest line
+				int i;
+				for (i = 0; i < last_len; i++) {
+					line_buff[i] = last_buff[i];
+				}
+				line_len = last_len;
+			} else {
+				// load from history
+				line_len = line_starts[curr_line + 1] - line_starts[curr_line] - 1;
+				int index = line_starts[curr_line];
+				int i;
+				for (i = 0; i < line_len; i++) {
+					line_buff[i] = ((char*) FILEDATA(FILEINO_CONSIN))[index + i];
+				}
+			}
+
+			// write the temporary buffer
+			int i;
+			for (i = 0; i < line_len; i++) {
+				cons_putc(line_buff[i]);
+			}
+
+			char_pos = line_len;
+
 			break;
 		}
 
-		if (c == 228) {    // left
-			// video_move_cursor(-1, false);
+		if (c == 228) {    // pressed left
 			blk_left();
 			char_pos--;
-			//pos_shift(-1);
 			break;
-		} else if (c == 229) {    // right
-			// video_move_cursor(1, false);
+		} else if (c == 229) {    // pressed right
 			blk_right();
 			char_pos++;
-			//pos_shift(1);
 			break;
 		}
 
 		if (c == 0)
 			continue;
 		
-		//cons.buf[cons.wpos++] = c;
-		//if (cons.wpos == CONSBUFSIZE)
-		//	cons.wpos = 0;
-
 		cons_putc(c);
 
 		// update the temporary buffer, shifting everything to the right of the
@@ -401,9 +308,6 @@ cons_intr(int (*proc)(void))
 			line_buff[i] = line_buff[i - 1];
 		}
 		line_buff[char_pos++] = c;
-
-		line_chars++;
-
 	}
 	spinlock_release(&cons_lock);
 
@@ -542,10 +446,8 @@ cons_io(void)
 	fileinode * consin = &files->fi[FILEINO_CONSIN];
 	while((c = cons_getc())){
 		((char*) FILEDATA(FILEINO_CONSIN))[consin->size++] = c;
-		//cprintf("CONSIN = |%s|\n", ((char*) FILEDATA(FILEINO_CONSIN)));
 		iodone = 1;
 	}
-	//cprintf("DONE\n");
 	
 	// Output
 	fileinode * consout = &files->fi[FILEINO_CONSOUT];
