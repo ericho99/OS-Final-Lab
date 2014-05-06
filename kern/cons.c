@@ -331,6 +331,10 @@ cons_intr(int (*proc)(void))
 			to_begin();
 			char_pos = line_start;
 			break;
+		} else if (c == 5 || c == 225){    // pressed crtl+E or end
+			to_end();
+			char_pos = line_len;
+			break;
 		}
 		
 		cons_putc(c);
