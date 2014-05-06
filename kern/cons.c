@@ -148,7 +148,20 @@ buf_strstr(char *col, int len){
 			return 0;
 		}
 	}
-	// if (line_buff[i] != col[i])
+	return 1;
+}
+
+int
+buf_strstr2(char *filename, int len){
+	int i;
+	for (i=0;i<line_len;i++){
+		if (i>len){
+			return 0;
+		}
+		else if (line_buff[i] != filename[i]){
+			return 0;
+		}
+	}
 	return 1;
 }
 
@@ -241,6 +254,22 @@ cons_intr(int (*proc)(void))
 			line_len = 0;
 			char_pos = 0;
 
+			break;
+		} else if (c == '\t') {
+			int i = FILEINO_GENERAL;
+			int j;
+			while (files->fi[i].de.d_name[0]) {
+				if (buf_strstr2(files->fi[i].de.d_name,strlen(files->fi[i].de.d_name))){
+					for (j=line_len;j<strlen(files->fi[i].de.d_name);j++){
+						line_buff[j] = files->fi[i].de.d_name[j];
+						line_len++;
+						char_pos++;
+						cons_putc(line_buff[j]);
+					}
+					break;
+				}
+				i++;
+			}
 			break;
 		} else if (c == 226) {    // pressed up
 			int start_reached = false;
