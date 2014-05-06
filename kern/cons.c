@@ -249,7 +249,7 @@ cons_intr(int (*proc)(void))
 			char_pos = line_len;
 
 			break;
-		} else if (c == 227) {
+		} else if (c == 227) {    // pressed down
 			if (curr_line >= line_no)
 				break;
 
