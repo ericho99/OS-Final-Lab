@@ -57,8 +57,6 @@ int masks[NUM_COLORS];     // these values in cons_init()
 int color_mask;    //Applied to change text color
 			       //(see en.wikipedia.org/wiki/VGA-compatible_text_mode)
 
-int kill_char = 0;
-
 /***** General device-independent console code *****/
 // Here we manage the console input buffer,
 // where we stash characters received from the keyboard or serial port
@@ -178,17 +176,9 @@ cons_intr(int (*proc)(void))
 	spinlock_acquire(&cons_lock);
 	fileinode * consin = &files->fi[FILEINO_CONSIN];
 	while ((c = (*proc)()) != -1) {
-		// cprintf("%d\n",c);
-		if (kill_char){
-			cons_putc('\b');
-			kill_char = 0;
-			continue;			
-		}
-		else if (c == 0){
+		if (c == 0) {    // null character, keep looking
 			continue;
-		}
-
-		if (c == '\b') {    // pressed backspace
+		} else if (c == '\b') {    // pressed backspace
 			if (char_pos <= 0)
 				break;
 
@@ -206,9 +196,7 @@ cons_intr(int (*proc)(void))
 			video_putc('\b');
 
 			break;
-		}
-
-		if (c == '\n') {    // pressed enter
+		} else if (c == '\n') {    // pressed enter
 
 			// update previous line start
 			line_starts[line_no++] = line_start;
@@ -327,9 +315,7 @@ cons_intr(int (*proc)(void))
 			char_pos = line_len;
 
 			break;
-		}
-
-		if (c == 228) {    // pressed left
+		} else if (c == 228) {    // pressed left
 			blk_left();
 			char_pos--;
 			break;
@@ -337,12 +323,10 @@ cons_intr(int (*proc)(void))
 			blk_right();
 			char_pos++;
 			break;
-		}
-
-		else if (c == 1){ //crtl-a
+		} else if (c == 1) {    // pressed crtl+A
 			to_begin();
 			char_pos = line_start;
-			kill_char = 1;
+			break;
 		}
 		
 		cons_putc(c);
