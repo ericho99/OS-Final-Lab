@@ -84,9 +84,6 @@ video_putc(int c)
 		blk_pos = crt_pos;
 		break;
 	default:
-		// crt_buf[crt_pos++] = c;		 write the character 
-		// blk_pos++;
-		// break;
 		// basically just shifts all the characters in the buffer that are to the right of the blinker position to the right
 		temp = crt_buf[blk_pos];
 		crt_buf[blk_pos] = c;
@@ -111,33 +108,20 @@ video_putc(int c)
 		line_pos = crt_pos + 2;
 	}
 	/* move that little blinky thing */
-	// outb(addr_6845, 14);
-	// outb(addr_6845 + 1, crt_pos >> 8);
-	// outb(addr_6845, 15);
-	// outb(addr_6845 + 1, crt_pos);
-	outb(addr_6845, 14);
-	outb(addr_6845 + 1, blk_pos >> 8);
-	outb(addr_6845, 15);
-	outb(addr_6845 + 1, blk_pos);
+	set_cursor_pos(blk_pos);
 }
 
 void blk_left(){
 	if (blk_pos > line_pos){
 		blk_pos--;
-		outb(addr_6845, 14);
-		outb(addr_6845 + 1, blk_pos >> 8);
-		outb(addr_6845, 15);
-		outb(addr_6845 + 1, blk_pos);
+		set_cursor_pos(blk_pos);
 	}
 }
 
 void blk_right(){
 	if (blk_pos < crt_pos){
 		blk_pos++;
-		outb(addr_6845, 14);
-		outb(addr_6845 + 1, blk_pos >> 8);
-		outb(addr_6845, 15);
-		outb(addr_6845 + 1, blk_pos);
+		set_cursor_pos(blk_pos);
 	}
 }
 
@@ -171,18 +155,6 @@ set_cursor_pos(uint16_t pos) {
 int
 video_move_cursor(int n, int del) {
 	int new_pos = blk_pos + n;
-	//cprintf("here b4\n");
-
-	//cprintf("blkpos = %d, linepos = %d, crtpos = %d\n", blk_pos, line_pos, crt_pos);
-
-	//if (blk_pos < line_pos || blk_pos > crt_pos)
-	//	return 0;
-
-	// check to make sure that the new position is valid
-	//if (!(new_pos >= line_pos && new_pos <= crt_pos))
-	//	return 0;
-	
-	//cprintf("here\n");
 
 	if (del) {
 		int i;
@@ -197,16 +169,6 @@ video_move_cursor(int n, int del) {
 			}
 			blk_pos = new_pos;
 		}
-		//uint16_t st_pos = (n < 0) ? new_pos : blk_pos;
-		//int pos_n = (n < 0) ? -n : n;
-		//for (i = 0; i < pos_n; i++) {
-		//	uint16_t del_pos = blk_pos + i;
-		//	uint16_t rep_pos = st_pos + i;
-		//	//crt_buf[rep_pos] =  (rep_pos <= crt_pos) ? crt_buf[rep_pos] : 'X';
-		//	crt_buf[rep_pos] = 'A';
-		//	//cprintf("YO");
-		//}
-		//blk_pos = new_pos;
 	} else {
 		blk_pos = new_pos;
 	}
